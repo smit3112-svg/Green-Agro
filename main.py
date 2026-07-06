@@ -17,7 +17,9 @@ from typing import Optional
 # ── Environment ───────────────────────────────────────────────────────────────
 load_dotenv()
 MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
-DB_NAME = os.getenv("DB_NAME", "green_agro")
+DB_NAME     = os.getenv("DB_NAME", "green_agro")
+ADMIN_USER  = os.getenv("ADMIN_USER", "admin")
+ADMIN_PASS  = os.getenv("ADMIN_PASS", "changeme")
 
 # ── MongoDB client (module-level, shared across requests) ─────────────────────
 client: AsyncIOMotorClient = None
@@ -177,6 +179,11 @@ class WithdrawRequest(BaseModel):
     ifsc: Optional[str] = None
 
 
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
 # ── Routes ────────────────────────────────────────────────────────────────────
 # /health is used by Render health checks and the frontend status indicator
 @app.get("/health")
@@ -192,6 +199,13 @@ api = APIRouter(prefix="/api")
 @api.get("/")
 async def root():
     return {"status": "Green Agro API running", "version": "1.0.0"}
+
+
+@api.post("/login")
+async def login(req: LoginRequest):
+    if req.username == ADMIN_USER and req.password == ADMIN_PASS:
+        return {"success": True, "message": "Login successful"}
+    raise HTTPException(status_code=401, detail="Invalid credentials")
 
 
 @api.get("/prices")

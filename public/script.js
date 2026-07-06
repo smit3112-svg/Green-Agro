@@ -36,18 +36,44 @@ function changeLanguage(lang) {
 }
 
 // ── Login / Logout ────────────────────────────────────────────────────────────
-function handleLogin() {
-    const user = document.getElementById('login-user').value.trim();
-    const pass = document.getElementById('login-pass').value.trim();
-    const errEl = document.getElementById('login-error');
+async function handleLogin() {
+    const user   = document.getElementById('login-user').value.trim();
+    const pass   = document.getElementById('login-pass').value.trim();
+    const errEl  = document.getElementById('login-error');
+    const btn    = document.querySelector('#login-container .cyber-btn.primary');
 
-    if (user === 'admin_master' && pass === 'password') {
-        errEl.style.display = 'none';
-        document.getElementById('login-container').style.display = 'none';
-        document.getElementById('app-container').style.display = 'flex';
-        document.getElementById('nav-dashboard-btn').click();
-    } else {
+    if (!user || !pass) {
+        errEl.innerText = 'Please enter your Admin ID and password.';
         errEl.style.display = 'block';
+        return;
+    }
+
+    btn.innerText = 'Authenticating...';
+    btn.disabled  = true;
+    errEl.style.display = 'none';
+
+    try {
+        const res  = await fetch('/api/login', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ username: user, password: pass }),
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('app-container').style.display   = 'flex';
+            document.getElementById('nav-dashboard-btn').click();
+        } else {
+            errEl.innerText = 'Invalid credentials. Please try again.';
+            errEl.style.display = 'block';
+        }
+    } catch (e) {
+        errEl.innerText = 'Server unreachable. Please try again.';
+        errEl.style.display = 'block';
+    } finally {
+        btn.innerText = 'Access Console';
+        btn.disabled  = false;
     }
 }
 

@@ -25,12 +25,12 @@
 
             <div class="cyber-form">
                 <label data-i18n="login_user">Admin ID</label>
-                <input type="text" id="login-user" class="cyber-input" value="admin_master" placeholder="Admin ID">
+                <input type="text" id="login-user" class="cyber-input" placeholder="Enter your Admin ID" autocomplete="username">
 
                 <label data-i18n="login_pass">Password</label>
-                <input type="password" id="login-pass" class="cyber-input" value="password" placeholder="Password">
+                <input type="password" id="login-pass" class="cyber-input" placeholder="Enter your password" autocomplete="current-password">
 
-                <p id="login-error" style="color:var(--eco-earth);font-size:0.85rem;display:none;">Invalid credentials. Use admin_master / password</p>
+                <p id="login-error" style="color:var(--eco-earth);font-size:0.85rem;display:none;">Invalid credentials. Please try again.</p>
                 <button class="cyber-btn primary mt-4" onclick="handleLogin()" data-i18n="btn_login">Access Console</button>
             </div>
         </div>
