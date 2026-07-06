@@ -261,8 +261,26 @@ body.light-theme {
 .step-label { font-size: 0.7rem; color: var(--text-light); text-align: center; font-weight: 500; }
 .step.active .step-label { color: var(--text-main); }
 
-.eco-text-leaf { color: var(--eco-leaf); font-weight: 600; }
+.eco-text-leaf  { color: var(--eco-leaf);  font-weight: 600; }
 .eco-text-green { color: var(--eco-green); font-weight: 600; }
+.eco-text-earth { color: var(--eco-earth); font-weight: 600; }
+.eco-text-gold  { color: var(--eco-gold);  font-weight: 600; }
+
+/* Status text */
+.status-text { font-size: 0.9rem; font-weight: 500; min-height: 1.2rem; }
+
+/* Loader spinner */
+.loader {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid var(--panel-border);
+    border-top-color: var(--eco-green);
+    animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Spacing helpers */
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-4 { margin-bottom: 1rem; }
 
 /* Modal UI */
 .modal {
