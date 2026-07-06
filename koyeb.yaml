@@ -1,0 +1,25 @@
+name: green-agro
+
+services:
+  - name: green-agro-api
+    type: web
+    git:
+      repository: https://github.com/smit3112-svg/Green-Agro.git
+      branch: master
+    build:
+      buildpack:
+        build-command: pip install -r requirements.txt
+    run:
+      command: uvicorn main:app --host 0.0.0.0 --port 8000
+    ports:
+      - port: 8000
+        protocol: http
+    env:
+      - key: MONGODB_URL
+        value: ""          # Set this in Koyeb dashboard → Secrets
+      - key: DB_NAME
+        value: green_agro
+    regions:
+      - was
+    instance_types:
+      - type: nano
