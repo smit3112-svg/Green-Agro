@@ -1,5 +1,5 @@
 // ── API base — routes served directly by FastAPI (no /api prefix) ─────────────
-const API_BASE = '';
+const API_BASE = '/api';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function formatCurrency(amount) {
@@ -488,7 +488,7 @@ function initDateFields() {
 // ── API health check ──────────────────────────────────────────────────────────
 async function checkApiStatus() {
     try {
-        const res = await fetch(`${API_BASE}/`);
+        const res = await fetch(`/health`);
         const dot = document.getElementById('api-status-dot');
         if (res.ok && dot) {
             dot.innerHTML = '<span class="pulse"></span> ONLINE';

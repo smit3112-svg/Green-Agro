@@ -178,12 +178,23 @@ class WithdrawRequest(BaseModel):
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
-@app.get("/")
+# /health is used by Render health checks and the frontend status indicator
+@app.get("/health")
+async def health():
+    return {"status": "Green Agro API running", "version": "1.0.0"}
+
+
+# All API routes are prefixed with /api so that StaticFiles at / can serve index.html
+from fastapi import APIRouter
+api = APIRouter(prefix="/api")
+
+
+@api.get("/")
 async def root():
     return {"status": "Green Agro API running", "version": "1.0.0"}
 
 
-@app.get("/prices")
+@api.get("/prices")
 async def get_prices():
     return {
         "wheat_straw":       {"price": 2150, "unit": "ton", "change": "+2.4%"},
@@ -193,7 +204,7 @@ async def get_prices():
     }
 
 
-@app.get("/farmer/{farmer_id}/dashboard")
+@api.get("/farmer/{farmer_id}/dashboard")
 async def farmer_dashboard(farmer_id: str):
     cursor = db.pickups.find({"farmer": "Ramesh Patel"})
     my_pickups = [to_json(p) async for p in cursor]
@@ -210,7 +221,7 @@ async def farmer_dashboard(farmer_id: str):
     }
 
 
-@app.post("/pickups")
+@api.post("/pickups")
 async def create_pickup(req: PickupRequest):
     pid = "PKP" + str(random.randint(100, 999))
     entry = {
@@ -223,7 +234,7 @@ async def create_pickup(req: PickupRequest):
     return {"success": True, "pickup_id": pid, "message": "Pickup booked!", "data": to_json(entry)}
 
 
-@app.get("/pickups/{pickup_id}/track")
+@api.get("/pickups/{pickup_id}/track")
 async def track_pickup(pickup_id: str):
     p = to_json(await db.pickups.find_one({"id": pickup_id}))
     if not p:
@@ -233,7 +244,7 @@ async def track_pickup(pickup_id: str):
     return {**p, "steps": steps, "current_step": current}
 
 
-@app.get("/buyer/{buyer_id}/dashboard")
+@api.get("/buyer/{buyer_id}/dashboard")
 async def buyer_dashboard(buyer_id: str):
     cursor = db.orders.find({"buyer": "Arjun Industries"})
     my_orders = [to_json(o) async for o in cursor]
@@ -247,7 +258,7 @@ async def buyer_dashboard(buyer_id: str):
     }
 
 
-@app.post("/orders")
+@api.post("/orders")
 async def create_order(req: OrderRequest):
     oid = "GA" + str(random.randint(1000, 9999))
     entry = {
@@ -261,7 +272,7 @@ async def create_order(req: OrderRequest):
     return {"success": True, "order_id": oid, "message": "Order placed!", "data": to_json(entry)}
 
 
-@app.get("/orders/{order_id}/track")
+@api.get("/orders/{order_id}/track")
 async def track_order(order_id: str):
     o = to_json(await db.orders.find_one({"id": order_id}))
     if not o:
@@ -271,7 +282,7 @@ async def track_order(order_id: str):
     return {**o, "steps": steps, "current_step": current}
 
 
-@app.post("/payments")
+@api.post("/payments")
 async def make_payment(req: PaymentRequest):
     order = to_json(await db.orders.find_one({"id": req.order_id}))
     if not order:
@@ -294,7 +305,7 @@ async def make_payment(req: PaymentRequest):
     }
 
 
-@app.post("/wallet/withdraw")
+@api.post("/wallet/withdraw")
 async def withdraw(req: WithdrawRequest):
     wallet_doc = to_json(await db.wallet.find_one({"key": "wallet"}))
     balance = wallet_doc["balance"] if wallet_doc else 0
@@ -320,7 +331,7 @@ async def withdraw(req: WithdrawRequest):
     }
 
 
-@app.get("/transactions")
+@api.get("/transactions")
 async def get_transactions():
     cursor = db.transactions.find().sort("date", -1)
     txns = [to_json(t) async for t in cursor]
@@ -328,7 +339,7 @@ async def get_transactions():
     return {"transactions": txns, "wallet_balance": wallet_doc["balance"] if wallet_doc else 0}
 
 
-@app.get("/impact")
+@api.get("/impact")
 async def get_impact():
     cursor = db.pickups.find()
     all_pickups = [to_json(p) async for p in cursor]
@@ -342,11 +353,17 @@ async def get_impact():
     }
 
 
+# ── Register API router BEFORE static files ──────────────────────────────────
+app.include_router(api)
+
+
 # ── Serve frontend static files (must be LAST) ────────────────────────────────
 import os as _os
 _public_dir = _os.path.join(_os.path.dirname(__file__), "public")
 if _os.path.isdir(_public_dir):
     app.mount("/", StaticFiles(directory=_public_dir, html=True), name="static")
+else:
+    print(f"[WARNING] Public dir not found at {_public_dir} — frontend will not be served.")
 
 
 # ── Entry point ───────────────────────────────────────────────────────────────
