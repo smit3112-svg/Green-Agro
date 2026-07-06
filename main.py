@@ -23,6 +23,16 @@ DB_NAME = os.getenv("DB_NAME", "green_agro")
 client: AsyncIOMotorClient = None
 db = None
 
+# Validate MONGODB_URL at import time so misconfiguration is obvious
+if MONGODB_URL == "mongodb://localhost:27017":
+    import sys
+    print(
+        "\n[ERROR] MONGODB_URL is not set! "
+        "Add it as an environment variable on Render/Koyeb.\n"
+        "Format: mongodb+srv://<user>:<pass>@<cluster>.mongodb.net/green_agro",
+        file=sys.stderr,
+    )
+
 
 def get_db():
     return db
@@ -88,11 +98,36 @@ async def seed_db():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global client, db
-    client = AsyncIOMotorClient(MONGODB_URL)
+    # serverSelectionTimeoutMS=5000 → fails fast instead of hanging 30s
+    client = AsyncIOMotorClient(
+        MONGODB_URL,
+        serverSelectionTimeoutMS=5000,
+        connectTimeoutMS=5000,
+        socketTimeoutMS=10000,
+    )
     db = client[DB_NAME]
-    await seed_db()
+
+    # Verify the connection is actually reachable before serving traffic
+    try:
+        await client.admin.command("ping")
+        print("[INFO] Connected to MongoDB Atlas successfully.")
+    except Exception as exc:
+        print(
+            f"[FATAL] Cannot connect to MongoDB: {exc}\n"
+            "Make sure MONGODB_URL is set correctly and "
+            "0.0.0.0/0 is whitelisted in MongoDB Atlas Network Access."
+        )
+        raise RuntimeError(f"MongoDB connection failed: {exc}") from exc
+
+    try:
+        await seed_db()
+        print("[INFO] Database seeding complete.")
+    except Exception as exc:
+        print(f"[WARNING] Seeding skipped or failed: {exc}")
+
     yield
     client.close()
+    print("[INFO] MongoDB connection closed.")
 
 
 # ── FastAPI app ───────────────────────────────────────────────────────────────
