@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise ERP - Management Console</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js"></script>
+</head>
+<body class="light-theme">
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-container" class="login-wrapper">
+        <div class="login-card glass-panel eco-border">
+            <div class="logo" style="justify-content: center; margin-bottom: 2rem;">
+                <i class='bx bx-briefcase'></i> Enterprise ERP
+            </div>
+            <h2 style="text-align: center; margin-bottom: 2rem;" data-i18n="login_title">Enterprise ERP Portal</h2>
+            
+            <div class="cyber-form">
+                <label data-i18n="login_user">Admin ID</label>
+                <input type="text" class="cyber-input" value="admin_master">
+
+                <label data-i18n="login_pass">Password</label>
+                <input type="password" class="cyber-input" value="********">
+
+                <button class="cyber-btn primary mt-4" onclick="handleLogin()" data-i18n="btn_login">Access Console</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP SCREEN (Hidden by default) -->
+    <div id="app-container" class="app-layout" style="display: none;">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar glass-panel">
+            <div class="logo">
+                <i class='bx bx-network-chart'></i> Management
+            </div>
+            
+            <div style="margin-bottom: 2rem;">
+                <select class="cyber-input" style="width: 100%; padding: 0.5rem;" onchange="changeLanguage(this.value)">
+                    <option value="en">🇬🇧 English</option>
+                    <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
+                    <option value="gu">🇮🇳 ગુજરાતી (Gujarati)</option>
+                </select>
+            </div>
+
+            <div class="sidebar-links">
+                <button class="nav-btn active" id="nav-dashboard-btn" onclick="switchTab('dashboard')"><i class='bx bxs-dashboard'></i> <span data-i18n="nav_dashboard">Admin Dashboard</span></button>
+                <button class="nav-btn" onclick="switchTab('seller')"><i class='bx bx-group'></i> <span data-i18n="nav_seller">Seller Management</span></button>
+                <button class="nav-btn" onclick="switchTab('buyer')"><i class='bx bx-buildings'></i> <span data-i18n="nav_buyer">Buyer Management</span></button>
+                <button class="nav-btn" onclick="switchTab('plant')"><i class='bx bx-cog'></i> <span data-i18n="nav_plant">Inventory & Plant</span></button>
+                <button class="nav-btn" onclick="switchTab('transport')"><i class='bx bx-map-alt'></i> <span data-i18n="nav_transport">Logistics Fleet</span></button>
+                <button class="nav-btn" onclick="switchTab('finance')"><i class='bx bx-line-chart'></i> <span data-i18n="nav_finance">Financial Analytics</span></button>
+            </div>
+            
+            <button class="cyber-btn" style="margin-bottom: 2rem; border-color: var(--eco-gold); color: var(--eco-gold);" onclick="toggleNotifications()">
+                <i class='bx bx-bell'></i> <span data-i18n="wid_notif">System Alerts</span>
+            </button>
+            
+            <div class="system-status">
+                <p data-i18n="sys_status">System Status</p>
+                <div class="status-indicator"><span class="pulse"></span> ONLINE</div>
+            </div>
+            <button class="cyber-btn mt-4" style="width: 100%;" onclick="handleLogout()"><i class='bx bx-log-out'></i> <span data-i18n="nav_logout">Logout</span></button>
+        </aside>
+
+        <!-- Slide-out Notifications Panel -->
+        <div id="notifications-panel" class="notif-panel glass-panel">
+            <div style="display:flex; justify-content:space-between; margin-bottom: 1rem;">
+                <h3 style="font-family:'Outfit'" data-i18n="wid_notif">System Alerts</h3>
+                <i class='bx bx-x' style="font-size:1.5rem; cursor:pointer" onclick="toggleNotifications()"></i>
+            </div>
+            <div class="list-view" id="notif-list">
+                <!-- Populated via JS -->
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            
+            <!-- 1. Admin Dashboard -->
+            <section id="dashboard-view" class="view-section active">
+                <div class="dashboard-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div class="greeting">
+                        <h1><span data-i18n="admin_welcome">Management Console</span></h1>
+                        <p><i class='bx bx-globe'></i> Global Headquarters Overview</p>
+                    </div>
+                    <div class="wallet-card glass-panel" style="padding: 1rem 2rem; border-left: 3px solid var(--eco-green);">
+                        <p style="color:var(--text-light); font-size:0.85rem" data-i18n="wallet_bal">Total Cash Flow</p>
+                        <h2 id="admin-wallet" style="font-size:2rem; margin:0.5rem 0">₹25,450,000</h2>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card glass-panel eco-border">
+                        <div class="icon eco-green"><i class='bx bx-package'></i></div>
+                        <div>
+                            <p data-i18n="f_total_pickups">Active Suppliers</p>
+                            <h3>1,204</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card glass-panel eco-border">
+                        <div class="icon eco-gold"><i class='bx bx-line-chart'></i></div>
+                        <div>
+                            <p data-i18n="f_collected">Raw Biomass (MT)</p>
+                            <h3>84,500</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card glass-panel eco-border" style="border-left: 4px solid var(--eco-leaf)">
+                        <div class="icon eco-leaf"><i class='bx bx-sun'></i></div>
+                        <div>
+                            <p data-i18n="wid_weather">Operational Weather</p>
+                            <h3 style="display:flex; align-items:center; gap:0.5rem;">28°C <span style="font-size:0.9rem; color:var(--text-light); font-family:'Inter'">Anand HQ</span></h3>
+                            <p style="font-size:0.75rem; color:var(--eco-leaf); margin-top:0.2rem; text-transform:none;" data-i18n="wid_weather_desc">Clear Skies. Optimal for fleet dispatch.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="cards-row">
+                    <div class="main-card glass-panel eco-border flex-2">
+                        <h3 data-i18n="wid_trends">Market Price Trends</h3>
+                        <div class="chart-container"><canvas id="adminMarketChart"></canvas></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Seller Management -->
+            <section id="seller-view" class="view-section">
+                <img src="/images/farmer_banner.png" alt="Seller Banner" class="module-banner">
+                <div class="dashboard-header">
+                    <div class="greeting">
+                        <h1 data-i18n="nav_seller">Seller Management</h1>
+                        <p>Manage raw material suppliers, payouts, and intake tracking</p>
+                    </div>
+                </div>
+
+                <div class="cards-row">
+                    <div class="main-card glass-panel flex-1">
+                        <h3 data-i18n="f_recent_tx">Recent Supplier Payouts</h3>
+                        <div class="list-view" id="f-transactions">
+                            <div class="list-item"><div><h4>Vendor ID: V-4092</h4><p>12 MT Wheat Straw</p></div><h4 class="eco-text-leaf">₹25,800</h4></div>
+                            <div class="list-item"><div><h4>Vendor ID: V-4091</h4><p>8 MT Rice Straw</p></div><h4 class="eco-text-leaf">₹15,360</h4></div>
+                        </div>
+                    </div>
+
+                    <div class="main-card glass-panel eco-border flex-1">
+                        <h3 data-i18n="f_waste_calc">Intake Estimator</h3>
+                        <div class="cyber-form">
+                            <label data-i18n="calc_harvest">Expected Harvest (MT)</label>
+                            <input type="number" id="calc-harvest" value="50" min="1" class="cyber-input" oninput="calculateWaste()">
+                            
+                            <label data-i18n="calc_crop">Raw Material Source</label>
+                            <select id="calc-crop" class="cyber-input" onchange="calculateWaste()">
+                                <option value="1.5" data-i18n="crop_wheat">Wheat Straw</option>
+                                <option value="1.2" data-i18n="crop_rice">Rice Straw</option>
+                                <option value="0.8" data-i18n="crop_sugarcane">Sugarcane Bagasse</option>
+                            </select>
+
+                            <div class="calc-result glow-box mt-4">
+                                <div>
+                                    <p style="color:var(--text-light); font-size:0.85rem" data-i18n="calc_est_waste">Estimated Yield:</p>
+                                    <h2 id="calc-waste-out">75 MT</h2>
+                                </div>
+                                <div class="mt-2">
+                                    <p style="color:var(--text-light); font-size:0.85rem" data-i18n="calc_est_earn">Est. Payout Cost:</p>
+                                    <h3 id="calc-earn-out" class="eco-text-leaf">₹161,250</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Buyer Management -->
+            <section id="buyer-view" class="view-section">
+                <img src="/images/buyer_banner.png" alt="Buyer Banner" class="module-banner">
+                <div class="dashboard-header">
+                    <div class="greeting">
+                        <h1 data-i18n="nav_buyer">Buyer Management</h1>
+                        <p>Client CRM, order generation, and receivables tracking</p>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card glass-panel eco-border">
+                        <div class="icon eco-green"><i class='bx bx-cart'></i></div>
+                        <div>
+                            <p data-i18n="b_ordered">Total Ordered (MT)</p>
+                            <h3>145,200</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card glass-panel eco-border">
+                        <div class="icon eco-earth"><i class='bx bx-wallet'></i></div>
+                        <div>
+                            <p data-i18n="b_out_due">Accounts Receivable</p>
+                            <h3 class="eco-text-earth">₹4,200,000</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cards-row">
+                    <div class="main-card glass-panel flex-1">
+                        <h3 data-i18n="b_next_del">Upcoming Deliveries</h3>
+                        <div class="glow-box mb-2">
+                            <p style="font-size:0.9rem; color:var(--eco-leaf)"><b>Client: Apex Industries</b></p>
+                            <p style="font-size:0.85rem; color:var(--text-light)">100 MT • Tomorrow, 09:00 AM</p>
+                        </div>
+                        <h3 style="margin-top: 1.5rem">Active Long-Term Contracts</h3>
+                        <div class="glow-box">
+                            <p style="font-size:0.9rem; color:var(--eco-leaf)"><b>Contract: C-9082 (Global Textiles)</b></p>
+                            <p style="font-size:0.85rem; color:var(--text-light)">500 MT/month • Expires: 2027</p>
+                        </div>
+                    </div>
+
+                    <div class="main-card glass-panel eco-border flex-1">
+                        <h3 data-i18n="b_place_order">Create Client Order</h3>
+                        <div class="cyber-form">
+                            <label>Select Client</label>
+                            <select class="cyber-input">
+                                <option>Apex Industries</option>
+                                <option>Global Textiles</option>
+                                <option>New Client...</option>
+                            </select>
+
+                            <label data-i18n="order_pellet">Product Line</label>
+                            <select id="order-pellet" class="cyber-input">
+                                <option value="8mm Pellet">Premium 8mm Biomass Pellet</option>
+                                <option value="10mm Pellet">Standard 10mm Biomass Pellet</option>
+                            </select>
+
+                            <label data-i18n="order_qty">Quantity (MT)</label>
+                            <input type="number" id="order-qty" value="10" min="1" class="cyber-input" oninput="calculateOrderCost()">
+
+                            <label data-i18n="order_dest">Destination Hub</label>
+                            <input type="text" id="order-dest" placeholder="Start typing a city..." class="cyber-input">
+
+                            <div class="calc-result glow-box mt-4" style="display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <p style="color:var(--text-light); font-size:0.85rem" data-i18n="order_est_cost">Invoice Total:</p>
+                                    <h2 id="order-cost-out" class="eco-text-green">₹60,000</h2>
+                                </div>
+                                <button class="cyber-btn primary" onclick="placeOrder()" data-i18n="btn_place">Generate Order</button>
+                            </div>
+                            <p id="order-status" class="mt-2 status-text"></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. Inventory & Plant -->
+            <section id="plant-view" class="view-section">
+                <img src="/images/plant_banner.png" alt="Plant Banner" class="module-banner">
+                <div class="dashboard-header">
+                    <div class="greeting">
+                        <h1 data-i18n="nav_plant">Inventory & Plant</h1>
+                        <p>Manage raw material buffers, processing, and finished goods</p>
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card glass-panel eco-border">
+                        <div class="icon eco-gold"><i class='bx bx-leaf'></i></div>
+                        <div><p>Raw Material Buffer (MT)</p><h3>1,450</h3></div>
+                    </div>
+                    <div class="stat-card glass-panel eco-border">
+                        <div class="icon eco-green"><i class='bx bxs-box'></i></div>
+                        <div><p>Finished Goods (MT)</p><h3>820</h3></div>
+                    </div>
+                </div>
+                <div class="cards-row">
+                    <div class="main-card glass-panel flex-1">
+                        <h3>Batch Processing Status</h3>
+                        <div class="list-view">
+                            <div class="list-item"><div><h4>Batch B-881</h4><p>Drying Phase (Moisture 18%)</p></div><div class="loader"></div></div>
+                            <div class="list-item"><div><h4>Batch B-880</h4><p>Pelletizing</p></div><div class="loader"></div></div>
+                        </div>
+                    </div>
+                    <div class="main-card glass-panel eco-border flex-1">
+                        <h3>Quality Assurance (QA)</h3>
+                        <button class="cyber-btn" style="width:100%; margin-bottom:0.5rem"><i class='bx bxs-file-pdf'></i> Generate QA Cert (Batch B-879)</button>
+                        <button class="cyber-btn" style="width:100%;"><i class='bx bxs-file-pdf'></i> View Lab Reports</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. Logistics Fleet -->
+            <section id="transport-view" class="view-section">
+                <img src="/images/logistics_banner.png" alt="Transport Banner" class="module-banner">
+                <div class="dashboard-header">
+                    <div class="greeting">
+                        <h1 data-i18n="nav_transport">Logistics Fleet</h1>
+                        <p>Global GPS tracking, dispatch routing, and fleet status</p>
+                    </div>
+                </div>
+                <div class="cards-row">
+                    <div class="main-card glass-panel flex-2">
+                        <h3>Live GPS Tracking & Route Optimization</h3>
+                        <div class="glow-box" style="height: 300px; display:flex; align-items:center; justify-content:center; background:#e2e8f0;">
+                            <p style="color:var(--text-light)"><i class='bx bx-map' style="font-size:2rem"></i> Map API Integration Pending</p>
+                        </div>
+                    </div>
+                    <div class="main-card glass-panel eco-border flex-1">
+                        <h3>Active Fleet Shipments</h3>
+                        <div class="tracking-list" id="tracking-pickups"></div>
+                        <div class="tracking-list mt-4" id="tracking-deliveries"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. Financial Analytics -->
+            <section id="finance-view" class="view-section">
+                <div class="dashboard-header">
+                    <div class="greeting">
+                        <h1 data-i18n="nav_finance">Financial Analytics</h1>
+                        <p>Revenue, margins, and carbon credit trading</p>
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card glass-panel eco-border">
+                        <div class="icon eco-green"><i class='bx bx-rupee'></i></div>
+                        <div><p>Q2 Revenue</p><h3>₹48.5M</h3></div>
+                    </div>
+                    <div class="stat-card glass-panel eco-border">
+                        <div class="icon eco-gold"><i class='bx bx-pie-chart-alt-2'></i></div>
+                        <div><p>Net Profit Margin</p><h3>24.2%</h3></div>
+                    </div>
+                </div>
+                <div class="cards-row mt-4">
+                    <div class="main-card glass-panel flex-1">
+                        <h3>Carbon Credit Trading</h3>
+                        <div class="glow-box">
+                            <h2 class="eco-text-leaf">12,450 Credits</h2>
+                            <p style="color:var(--text-light); font-size:0.85rem">Ready for market trading</p>
+                            <button class="cyber-btn primary mt-2">Open Trading Desk</button>
+                        </div>
+                    </div>
+                    <div class="main-card glass-panel flex-1">
+                        <h3>ESG Reporting</h3>
+                        <button class="cyber-btn" style="width:100%; margin-bottom:0.5rem"><i class='bx bxs-download'></i> Download Q2 2026 ESG Report</button>
+                        <button class="cyber-btn" style="width:100%; margin-bottom:0.5rem"><i class='bx bx-file'></i> View Audit Logs</button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Payment Modal (Hidden for Admin, can be used for supplier payouts) -->
+    <div id="payment-modal" class="modal"></div>
+
+    <script src="translations.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
